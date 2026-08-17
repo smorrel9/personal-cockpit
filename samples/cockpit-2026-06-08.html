@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Cockpit</title>
+<style>
+:root {
+  --primary: #2E5266; --accent: #C8941F; --dgray: #2A3441; --lgray: #F4F2EE; --border: #DED8CF;
+  --text: #2A323A; --mute: #6B7280; --red: #8B1A1A; --redbg: #FAEAEA; --green: #2E6B2E; --greenbg: #EAF4EA;
+  --purple: #5B4380; --purplebg: #EFEAF6; --teal: #2E6B6E; --tealbg: #E6F0F1;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #FAF9F6; color: var(--text); -webkit-font-smoothing: antialiased; }
+body { font-family: Arial, "Libre Franklin", "Open Sans", sans-serif; font-size: 13.5px; line-height: 1.45; padding: 12px; max-width: 560px; margin: 0 auto; }
+header { border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 12px; }
+header h1 { font-size: 17px; font-weight: 700; color: var(--dgray); letter-spacing: -0.01em; }
+header .meta { font-size: 10px; color: var(--mute); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; display: flex; justify-content: space-between; align-items: center; }
+.weather { font-size: 11px; color: var(--primary); font-weight: 600; text-transform: none; letter-spacing: 0; }
+.howto { background: #FFFCF3; border: 1px solid #E8DBA8; border-radius: 5px; padding: 10px 12px; margin-bottom: 10px; font-size: 11.5px; line-height: 1.5; color: #5A4A1A; }
+.howto strong { color: #3F340E; }
+.schedule { background: white; border: 1px solid var(--border); border-left: 4px solid var(--dgray); border-radius: 5px; padding: 10px 12px; margin-bottom: 10px; }
+.schedule h2 { font-size: 11px; font-weight: 700; color: var(--dgray); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; display: flex; justify-content: space-between; }
+.schedule h2 .today-read { font-size: 10px; color: var(--mute); font-weight: 400; letter-spacing: 0.04em; text-transform: none; }
+.day { display: grid; grid-template-columns: 74px 1fr; gap: 8px; padding: 4px 0; font-size: 12.5px; border-bottom: 1px dotted #EFEAE5; }
+.day:last-child { border-bottom: none; }
+.day .time { font-weight: 700; color: var(--dgray); font-size: 11.5px; white-space: nowrap; }
+.day .body { color: var(--text); }
+.day.past { opacity: 0.45; }
+.day.today { background: #EDF2F4; border-radius: 3px; padding: 5px 6px; margin: 0 -4px; border-left: 3px solid var(--accent); }
+.day.today .time { color: var(--primary); }
+section { background: white; border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 5px; padding: 10px 12px; margin-bottom: 8px; }
+section.urgent { border-left-color: var(--red); background: #FFF7F6; }
+section.travel { border-left-color: var(--accent); }
+section.home { border-left-color: var(--teal); background: var(--tealbg); }
+section.work { border-left-color: var(--primary); background: #EEF3F6; }
+section.email { border-left-color: var(--purple); background: var(--purplebg); }
+section.standing { border-left-color: var(--mute); background: var(--lgray); }
+section.wrap { border-left-color: var(--green); background: var(--greenbg); }
+h2.sec-title { font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 7px; display: flex; justify-content: space-between; }
+section.urgent h2.sec-title { color: var(--red); }
+section.travel h2.sec-title { color: var(--accent); }
+section.home h2.sec-title { color: var(--teal); }
+section.work h2.sec-title { color: var(--primary); }
+section.email h2.sec-title { color: var(--purple); }
+section.standing h2.sec-title { color: var(--mute); }
+section.wrap h2.sec-title { color: var(--green); }
+h2 .count { font-size: 10px; font-weight: 600; color: var(--mute); letter-spacing: 0.04em; text-transform: none; }
+.task { display: flex; align-items: flex-start; gap: 7px; padding: 4px 0; font-size: 13px; line-height: 1.4; cursor: pointer; user-select: none; }
+.task:not(:last-child) { border-bottom: 1px dotted #EFEAE5; }
+.task .box { flex-shrink: 0; width: 14px; height: 14px; border: 1.5px solid var(--mute); border-radius: 3px; margin-top: 2px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; transition: all 0.15s; }
+.task.done .box { background: var(--green); border-color: var(--green); }
+.task.done .box::before { content: "\2713"; }
+.task.done .label { text-decoration: line-through; color: var(--mute); }
+.task .label { flex: 1; color: var(--text); }
+.task .label strong { color: var(--dgray); }
+.task .due { display: inline-block; font-size: 9.5px; font-weight: 700; background: var(--red); color: white; padding: 1px 5px; border-radius: 2px; margin-left: 4px; text-transform: uppercase; letter-spacing: 0.04em; vertical-align: 1px; }
+.task .due.soft { background: var(--mute); }
+.task .due.win { background: var(--green); }
+.task .due.travel { background: var(--accent); }
+.task .due.work { background: var(--primary); }
+.note { font-size: 11.5px; color: var(--mute); font-style: italic; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border); }
+.progress { font-size: 10.5px; color: var(--mute); text-align: right; padding: 4px 0 0; }
+footer { font-size: 10px; color: var(--mute); text-align: center; margin-top: 14px; letter-spacing: 0.04em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Personal Cockpit</h1>
+  <div class="meta">
+    <span id="weekof">Week of [DATE] · [YEAR]</span>
+    <span class="weather">⛅ 82° · clear, light breeze</span>
+  </div>
+</header>
+
+<div class="howto">
+  <strong>How to use:</strong> Standalone HTML file. Open in any browser, click to check items off (saved in browser storage), and ask your assistant to refresh it. The week strip auto-highlights today. Checkboxes reset every Monday so each week starts clean.
+</div>
+
+<div class="schedule">
+  <h2>This Week <span class="today-read" id="today-read"></span></h2>
+  <div class="day" data-day="1"><div class="time">Mon</div><div class="body">9a standup · 6p spin class</div></div>
+  <div class="day" data-day="2"><div class="time">Tue</div><div class="body">Open</div></div>
+  <div class="day" data-day="3"><div class="time">Wed</div><div class="body">9-11 focus block · 1p dentist</div></div>
+  <div class="day" data-day="4"><div class="time">Thu</div><div class="body">12p lunch with Sam</div></div>
+  <div class="day" data-day="5"><div class="time">Fri</div><div class="body">3p 1:1 with manager</div></div>
+  <div class="day" data-day="6"><div class="time">Sat</div><div class="body">Farmers market</div></div>
+  <div class="day" data-day="0"><div class="time">Sun</div><div class="body">Weekly reset</div></div>
+</div>
+
+<section class="urgent">
+  <h2 class="sec-title">This Week / Soon <span class="count" id="c-urgent"></span></h2>
+  <div class="task" data-id="urgent-car-reg"><div class="box"></div><div class="label"><strong>Renew car registration</strong> · before it lapses. <span class="due">JUN 12</span></div></div>
+  <div class="task" data-id="urgent-rsvp"><div class="box"></div><div class="label"><strong>RSVP to Priya's housewarming</strong> · yes/no by Saturday. <span class="due">JUN 13</span></div></div>
+</section>
+
+<section class="travel">
+  <h2 class="sec-title">Travel &amp; Trips <span class="count" id="c-travel"></span></h2>
+  <div class="task" data-id="trip-portland"><div class="box"></div><div class="label"><strong>Weekend in Portland</strong> · Jul 18&ndash;20. <span class="due travel">JUL</span></div></div>
+</section>
+
+<section class="home">
+  <h2 class="sec-title">Home &amp; Personal <span class="count" id="c-home"></span></h2>
+  <div class="task" data-id="home-faucet"><div class="box"></div><div class="label"><strong>Fix the leaky kitchen faucet</strong> · buy the washer kit first.</div></div>
+  <div class="task" data-id="home-prints"><div class="box"></div><div class="label"><strong>Frame the hallway prints</strong> · pick frames this weekend.</div></div>
+</section>
+
+<section class="work">
+  <h2 class="sec-title">Work Radar <span class="count" id="c-work"></span></h2>
+  <div class="note" style="margin-top:0; margin-bottom:7px; padding-top:0; border-top:none; font-size:10.5px;">Glance-level tracking. Detailed work lives elsewhere.</div>
+  <div class="task" data-id="work-q3"><div class="box"></div><div class="label"><strong>Q3 planning cycle kicking off</strong></div></div>
+  <div class="task" data-id="work-mentorship"><div class="box"></div><div class="label"><strong>Mentorship program application</strong> · window opens this month.</div></div>
+</section>
+
+<section class="email">
+  <h2 class="sec-title">Email To-Dos <span class="count" id="c-email"></span></h2>
+  <div class="note" style="margin-top:0; margin-bottom:7px; padding-top:0; border-top:none; font-size:10.5px;">From today's briefing. A reply draft to the landlord is already saved in your drafts, unsent.</div>
+  <div class="task" data-id="email-lease"><div class="box"></div><div class="label"><strong>Landlord: lease renewal</strong> · decide by end of month. Draft reply saved, review and send.</div></div>
+  <div class="task" data-id="email-referral"><div class="box"></div><div class="label"><strong>Doctor's office: referral</strong> · confirm the specialist appointment they proposed.</div></div>
+  <div class="task" data-id="email-bookclub"><div class="box"></div><div class="label"><strong>Book club</strong> · pick between the two June date options.</div></div>
+</section>
+
+<section class="standing">
+  <h2 class="sec-title">Standing / Recurring</h2>
+  <div class="task" data-id="standing-budget"><div class="box"></div><div class="label"><strong>Monthly budget review</strong> · cards, savings, statements.</div></div>
+  <div class="task" data-id="standing-plants"><div class="box"></div><div class="label"><strong>Water the plants</strong> · weekly.</div></div>
+  <div class="task" data-id="standing-parents"><div class="box"></div><div class="label"><strong>Call parents</strong> · weekly check-in.</div></div>
+</section>
+
+<section class="wrap">
+  <h2 class="sec-title">Weekly Wrap / Reset</h2>
+  <div class="note" style="margin-top:0; margin-bottom:7px; padding-top:0; border-top:none; font-size:10.5px;">A five-minute close on the week before the next refresh.</div>
+  <div class="task" data-id="wrap-1"><div class="box"></div><div class="label"><strong>What got done</strong> · skim the checks above.</div></div>
+  <div class="task" data-id="wrap-2"><div class="box"></div><div class="label"><strong>What slipped</strong> · carry it into next week's This Week / Soon.</div></div>
+  <div class="task" data-id="wrap-3"><div class="box"></div><div class="label"><strong>Look ahead</strong> · scan next week for anything needing prep now.</div></div>
+</section>
+
+<div class="progress" id="progress">0 of 0 checked</div>
+<footer>Personal Cockpit · Standalone · Resets weekly</footer>
+
+<script>
+function setWeekDates() {
+  const d = new Date();
+  const monday = new Date(d);
+  monday.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  const order = { 1:0, 2:1, 3:2, 4:3, 5:4, 6:5, 0:6 };
+  const abbr = { 1:'Mon', 2:'Tue', 3:'Wed', 4:'Thu', 5:'Fri', 6:'Sat', 0:'Sun' };
+  document.querySelectorAll('.day').forEach(el => {
+    const dn = Number(el.dataset.day);
+    const dt = new Date(monday);
+    dt.setDate(monday.getDate() + order[dn]);
+    const t = el.querySelector('.time');
+    if (t) t.textContent = abbr[dn] + ' ' + (dt.getMonth() + 1) + '/' + dt.getDate();
+  });
+}
+function updateWeek() {
+  const today = new Date().getDay();
+  const order = { 1:0, 2:1, 3:2, 4:3, 5:4, 6:5, 0:6 };
+  const todayPos = order[today];
+  let todayBody = '';
+  document.querySelectorAll('.day').forEach(d => {
+    const dn = Number(d.dataset.day);
+    d.classList.remove('past', 'today');
+    if (dn === today) { d.classList.add('today'); todayBody = d.querySelector('.body').textContent.trim(); }
+    else if (order[dn] < todayPos) { d.classList.add('past'); }
+  });
+  const names = { 0:'Sunday', 1:'Monday', 2:'Tuesday', 3:'Wednesday', 4:'Thursday', 5:'Friday', 6:'Saturday' };
+  const read = document.getElementById('today-read');
+  if (read) read.textContent = 'Today: ' + names[today] + (todayBody && !todayBody.startsWith('[') ? ' · ' + todayBody : '');
+}
+function setWeekOf() {
+  const d = new Date();
+  const monday = new Date(d);
+  monday.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  const mo = monday.toLocaleString('en-US', { month: 'short' });
+  const el = document.getElementById('weekof');
+  if (el) el.textContent = 'Week of ' + mo + ' ' + monday.getDate() + ' · ' + monday.getFullYear();
+}
+function weekKey() {
+  const d = new Date();
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = (date.getUTCDay() + 6) % 7;
+  date.setUTCDate(date.getUTCDate() - dayNum + 3);
+  const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+  const week = 1 + Math.round(((date - firstThursday) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
+  return 'personal-cockpit-' + date.getUTCFullYear() + '-W' + String(week).padStart(2, '0');
+}
+const STORE_KEY = weekKey();
+function saveState() { try { const s = {}; document.querySelectorAll('.task.done').forEach(t => { if (t.dataset.id) s[t.dataset.id] = true; }); localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch (e) {} }
+function restoreState() { try { const s = JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); document.querySelectorAll('.task').forEach(t => { if (t.dataset.id && s[t.dataset.id]) t.classList.add('done'); }); } catch (e) {} }
+function bindTasks() { document.querySelectorAll('.task').forEach(t => { t.addEventListener('click', () => { t.classList.toggle('done'); saveState(); updateProgress(); updateCounts(); }); }); }
+function updateProgress() { const total = document.querySelectorAll('.task').length; const done = document.querySelectorAll('.task.done').length; const el = document.getElementById('progress'); if (el) el.textContent = done + ' of ' + total + ' checked'; }
+function updateCounts() {
+  ['urgent', 'travel', 'home', 'work', 'email'].forEach(cls => {
+    const sec = document.querySelector('section.' + cls); if (!sec) return;
+    const tot = sec.querySelectorAll('.task').length;
+    const dn = sec.querySelectorAll('.task.done').length;
+    const el = document.getElementById('c-' + cls); if (el) el.textContent = dn + ' / ' + tot;
+  });
+}
+setWeekOf(); setWeekDates(); updateWeek(); restoreState(); bindTasks(); updateProgress(); updateCounts();
+setInterval(updateWeek, 600000);
+</script>
+</body>
+</html>
